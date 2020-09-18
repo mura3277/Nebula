@@ -1,55 +1,58 @@
-const cache = {}, df = document.createDocumentFragment(); //The node creation cache and document frag
+//823 bytes
+d = document; w = window; o = Object; //Assign shortcuts to common global objects
+cache = {}, df = d.createDocumentFragment(); //The node creation cache and document frag
 
+/**# Components #**/
 class Comp {
-    constructor(s, a) { //Copies the args for e(), to pass directly
-        this.e = elm(s, a);
-        this.frag = (p) => this.onFrag(this.p = p);
-        this.reFrag = () => frag(this.p, this);
-        this.onFrag = () => {};
+    constructor(query, data) { //Copies the args for e(), to pass directly
+        this.e = elm(query, data);
+        this.frag = p => {this.onFrag(this.p = p); return this.e};
+        this.reFrag = _ => frag(this.p, this);
+        this.onFrag = _ => {};
     }
 }
 
-function elm(s, ...a) {
-    let e, q = s; //Define e (our element to build) and a copy of s as q (to preserve the original query before the split)
-    if ((e = cache[s])) return e.cloneNode(false); //If The node we're trying to build exists in the cache, return a copy
-    s = [(s = s.split('.'))[0].split('#'), s[1]]; //Split s to get tag, id and class ids from queries (tag#testId.testClass)
-    e = document.createElement(s[0][0] || 'div'); //Create the node from the query data, as a div tag?
-    if (s[0][1]) e.id = s[0][1]; //If the query[0][1] has an entry for id, assign it
-    if (s[1]) e.className = s[1]; //If the query[1] has an entry for className, assign it
-    if (a) assign(e, ...a); //If extra data was passed into the function
-    return (cache[q] = e); //Finally put our new node in the cache and return it
-}
-
-
-function assign(node) {
-    let b, type; //Save a copy of the i'th element as b, and the type of b for efficency
-    for (let i = 1; i < arguments.length; i++) { //Loop over arguments starting at 1 to skip node
-        b = arguments[i]; type = typeof b; //Assign efficnecy variables
-        if (b && b.nodeType) node.appendChild(b); //If b is a node, append b to our newly constructed node to nest it
-        else if (type === 'object') { //If we were passed an object, assign properties to our new node
-            for (let j in b) { //Loop over properties
-                if (j === 'style') { //The root object for css data must begin with a style -> object mapping
-                    for (let k in b.style) { //Loop over all the entries inside the style object
-                        node.style[k] = b.style[k]; //For every entry in the style object, assign it to our new node
-                    }
-                } else {
-                    node[j] = b[j]; //Otherwise, assign node properties to the data passed. This could be onclick: function(){alert(test)}
-                }
+/**# Element Creation Query #**/
+elm = (query, ...data) => {
+    let node, q = query; //Define node (our element to build) and a copy of query as q (to preserve the original query before the split)
+    if ((node = cache[query])) return node.cloneNode(false); //If The node we're trying to build exists in the cache, return a copy
+    query = [(query = query.split('.'))[0].split('#'), query[1]]; //Split query to get tag, id and class ids from queries (tag#testId.testClass)
+    node = d.createElement(query[0][0] || 'div'); //Create the node from the query data, use tag name if it exists, and default to div if not
+    if (query[0][1]) node.id = query[0][1]; //If the query[0][1] has an entry for id, assign it
+    if (query[1]) node.className = query[1]; //If the query[1] has an entry for className, assign it
+    if (data) {
+        let obj, type; //Save a copy of the i'th element as obj, and the type of obj for efficency
+        for (let i = 0; i < data.length; i++) { //Loop over arguments starting at 1 to skip node
+            obj = data[i]; type = typeof obj; //Assign efficnecy variables
+            if (obj && obj.nodeType) node.appendChild(obj); //If obj is a node, append it to our newly constructed node to nest it
+            else if (type === 'object') { //If we were passed an object, assign properties to our new node
+                if (obj.css) css(node, obj.css); //If the object has the css property, merge it with the nodes style obj
+                add(node, obj); //Merge any other objects with node like '{onclick:()=>alert(text)}'
             }
+            else if (type === 'string' || type === 'number') node.textContent = obj; //If data is alphanumeric, assign it to text content
+            else if (type === 'function') obj(node); //If data is a function, treat it as a callback and pass our new node
         }
-        else if (type === 'string' || type === 'number') node.textContent = b; //If data is alphanumeric, assign it to text content
-        else if (type === 'function') b(node); //If data is a function, treat it as a callback and pass our new node
     }
+    return (cache[q] = node); //Finally put our new node in the cache and return it
 }
 
-
-
-function frag(p, c) {
-    if (c.e) { //If passed a object with a member of e assigned, assume to be a component and access the node
-        df.appendChild(c.e); //Append to document frag
-        if (c.frag) c.frag(p); //If the component has a onFrag method defined, call it
-    } else {
-        df.appendChild(c); //Otherwise, assume we got a normal node and append it to the document frag
-    }
-    if (p) p.appendChild(df); //Finally append the node(s) in the frag to the parent element if it is assigned
-}
+/**# Common Method Shortcuts/Helpers #**/
+vp = {h:_ => innerHeight, t:_ => scrollY, b:_ => scrollY + innerHeight}; 
+$ = (str, ctx = d) => (x = ctx.querySelectorAll(str))[1] ? x : x[0];
+hi = node => node.offsetHeight;
+tp = node => node.offsetTop;
+bt = node => tp(node) + ht(node);
+md = node => tp(node) + ht(node) / 2;
+on = (e, s, f) => e.addEventListener(s, f);
+css = (node, obj) => o.assign(node.style, obj); //Merge the style object with the overrides from the passed object
+add = (node, obj) => o.assign(node, obj); //Node Object Assigning
+attr = (node, key, value) => value ? node.setAttribute(key, value) : node.getAttribute(key);
+data = (node, key, value) => attr(node, 'data-' + key, value);
+ary = a => Array.isArray(a);
+comb = e => [].concat(e).flat();
+goto = (e, o) => e.scrollIntoView(o || {behavior:'smooth'});
+hov = (e, f) => {on(e, 'mouseenter', _ => f(!1)); on(e, 'mouseleave', _ => f(!0))};
+local = (s, v) => v ? localStorage.setItem(s, ary(v) ? JSON.stringify(v) : v) : localStorage.getItem(s);
+load = (u, f) => fetch(u).then(r => f(r.text()));
+obv = (e, f, o) => comb(e).some(i => new IntersectionObserver(j => f(j[0].isIntersecting, j[0]), {threshold:o || .5}).observe(i));
+frag = (parent, node) => parent.appendChild(node.e ? node.frag(parent) : node);
