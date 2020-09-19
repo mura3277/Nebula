@@ -1,25 +1,17 @@
-class Card extends Comp {
-    constructor(query, data) {
-        super(query, data);
-        this.i = 0;
-        add(this.e, {onclick:()=>this.reFrag()});
-        this.onFrag = _ => {
-            this.i++;
-            this.e.innerHTML = "Nebula Lib " + this.i;
-        };
-    }
+card = (q, d) => {
+    c = new Comp(q, d);
+    c.i = 0;
+    add(c.e, {onclick:_=>c.pop()});
+    c.onPop = p => c.e.innerHTML = "Nebula Lib " + (c.i++);
+    return c;
 }
 
 on(d, "DOMContentLoaded", _ => {
-    on(w, "load", _ => console.log("load"));
-
-    frag($("#d"),
-        elm('test#testid.testclass', 'x', {css:{color:"red"}}, 
-            elm('y', 'y', {css:{color:"green"}, onclick:_=>alert("y")}, 
-                elm('z', 'z', {css:{color:"blue"}})))
+    pop($("#d"),
+        e('test#testid.testclass', 'x', {css:{color:"red"}},
+            e('y', 'y', {css:{color:"green"}, onclick:_=>alert("y")},
+                e('z', 'z', {css:{color:"blue"}})))
     );
-
-    frag($("#d"), elm('div#brandon.duck', 'lmao', {css:{color:"red"}, onclick:_=>alert("test")}));
-
-    frag($('#d'), new Card("nebula", {css:{color:"red"}}));
+    pop($("#d"), e('div#brandon.duck', 'lmao', {css:{color:"red"}, onclick:_=>alert("test")}));
+    pop($('#d'), card("nebula", {css:{color:"red"}}));
 });
