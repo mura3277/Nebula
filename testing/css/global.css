@@ -1,0 +1,43 @@
+@font-face {
+  font-family: Raleway;
+  src:  url('../fonts/Raleway-SemiBold.ttf') format('truetype'),
+        url('../fonts/Raleway-ExtraBold.ttf') format('truetype');
+}
+* {
+    margin: 0;
+    padding: 0;
+}
+html, body {
+    height: 100%;
+    width: 100%;
+}
+body {
+    font-family: Raleway, sans-serif;
+    background: #1D252C;
+    opacity: 1;
+    overflow-x: hidden;
+    user-select: none;
+    transition: opacity ease-in-out 500ms;
+}
+a {
+    color: #1D252C;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+::-webkit-scrollbar, ::-webkit-scrollbar-corner {
+    width: 10px;
+    height: 7px;
+    background: #1D252C;
+}
+::-webkit-scrollbar-track, ::-webkit-scrollbar-thumb {
+    width: 10px;
+    border-radius: 10px;
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(236, 5, 142, 0.75);
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(85, 214, 170, 0.75); }
+  100% { box-shadow: 0 0 0 20px transparent; }
+}
